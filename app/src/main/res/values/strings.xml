@@ -1,3 +1,4 @@
 <resources>
-	<string name="app_name">BlankApplicationKotlin</string>
+	<string name="app_name">小明点读</string>
+	<string name="accessibility_service_description">小明点读软件服务于识字较少的人群。\n\n此无障碍服务用于获取用户点击的控件文本，并调用系统 TTS 朗读出来。</string>
 </resources>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<style name="ButtonHome">
+		<item name="android:layout_width">match_parent</item>
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:orientation">horizontal</item>
+		<item name="android:clickable">true</item>
+		<item name="android:focusable">true</item>
+		<item name="android:background">@drawable/btn_radius_cyan_20</item>
+		<item name="android:foreground">?android:selectableItemBackgroundBorderless</item>
+		<item name="android:gravity">center_vertical</item>
+		<item name="android:paddingStart">16dp</item>
+		<item name="android:paddingEnd">16dp</item>
+		<item name="android:paddingTop">16dp</item>
+		<item name="android:paddingBottom">16dp</item>
+		<item name="android:baselineAligned">false</item>
+		<item name="android:layout_marginTop">8dp</item>
+		
+	</style>
+
+	<style name="ViewHomeBtnIcon">
+		<item name="android:layout_width">40dp</item>
+		<item name="android:layout_height">40dp</item>
+	</style>
+
+	<style name="LinHomeBtnChild">
+		<item name="android:baselineAligned">false</item>
+		<item name="android:layout_width">match_parent</item>
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:orientation">vertical</item>
+		<item name="android:paddingStart">16dp</item>
+	</style>
+
+	<style name="TextviewHomeBtnMain">
+		<item name="android:layout_width">match_parent</item>
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:textSize">16sp</item>
+		<item name="android:textColor">@color/black_text_1</item>
+	</style>
+
+	<style name="TextviewHomeBtnSub">
+		<item name="android:paddingTop">4dp</item>
+		<item name="android:layout_width">match_parent</item>
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:textSize">14sp</item>
+		<item name="android:textColor">@color/black_text_2</item>
+	</style>
+</resources>

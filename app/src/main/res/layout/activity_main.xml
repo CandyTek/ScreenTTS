@@ -3,6 +3,7 @@
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
+	android:fitsSystemWindows="true"
 	tools:context=".TestActivity1"
 	>
 
@@ -10,16 +11,163 @@
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:orientation="vertical"
+		android:paddingHorizontal="16dp"
+		android:paddingBottom="8dp"
 		>
 
+		<LinearLayout
+			android:id="@+id/btnGotoAccessibilitySettings"
+			style="@style/ButtonHome"
+			android:visibility="gone"
+			>
 
-		<Button
-			android:id="@+id/test1"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:text="测试1"
-			/>
+			<View
+				style="@style/ViewHomeBtnIcon"
+				android:background="@drawable/circle_tts"
+				/>
+
+			<LinearLayout style="@style/LinHomeBtnChild">
+
+				<TextView
+					style="@style/TextviewHomeBtnMain"
+					android:text="开启 / 关闭 小明点读"
+					/>
+
+				<TextView
+					style="@style/TextviewHomeBtnSub"
+					android:text="前往无障碍设置页面，找到并点击“小明点读”一项，选择开启或关闭"
+					/>
+
+			</LinearLayout>
+
+		</LinearLayout>
+
+		<LinearLayout
+			android:id="@+id/btnRunningStatus"
+			style="@style/ButtonHome"
+			>
+
+			<View
+				style="@style/ViewHomeBtnIcon"
+				android:background="@drawable/circle_running"
+				/>
+
+			<LinearLayout style="@style/LinHomeBtnChild">
+
+				<TextView
+					android:id="@+id/tvServiceRunningStatus"
+					style="@style/TextviewHomeBtnMain"
+					android:text="小明点读 正在运行"
+					android:textStyle="bold"
+					/>
+
+				<TextView
+					android:id="@+id/tvServiceRunningStatusSub"
+					style="@style/TextviewHomeBtnSub"
+					android:text="版本 1.0"
+					/>
+
+			</LinearLayout>
+
+		</LinearLayout>
+
+		<LinearLayout
+			android:id="@+id/btnGotoSystemSettingsTTS"
+			style="@style/ButtonHome"
+			>
+
+			<View
+				style="@style/ViewHomeBtnIcon"
+				android:background="@drawable/circle_settings"
+				/>
+
+			<LinearLayout style="@style/LinHomeBtnChild">
+
+				<TextView
+					style="@style/TextviewHomeBtnMain"
+					android:text="跳转 TTS 设置（语音输出引擎）"
+					/>
+
+				<TextView
+					style="@style/TextviewHomeBtnSub"
+					android:text="设置声音风格"
+					/>
+
+			</LinearLayout>
+
+		</LinearLayout>
+		<LinearLayout
+			android:id="@+id/btnRefreshTTS"
+			style="@style/ButtonHome"
+			>
+
+			<View
+				style="@style/ViewHomeBtnIcon"
+				android:background="@drawable/circle_hear"
+				/>
+
+			<LinearLayout style="@style/LinHomeBtnChild">
+
+				<TextView
+					style="@style/TextviewHomeBtnMain"
+					android:text="刷新语音引擎，并测试声音"
+					/>
+
+				<TextView
+					style="@style/TextviewHomeBtnSub"
+					android:text="将播放一段测试文本"
+					/>
+
+			</LinearLayout>
+
+		</LinearLayout>
+		<LinearLayout
+			android:id="@+id/btnDownloadTTS"
+			style="@style/ButtonHome"
+			>
+
+			<View
+				style="@style/ViewHomeBtnIcon"
+				android:background="@drawable/circle_download"
+				/>
+
+			<LinearLayout style="@style/LinHomeBtnChild">
+
+				<TextView
+					style="@style/TextviewHomeBtnMain"
+					android:text="下载更多 TTS 引擎"
+					/>
+
+				<TextView
+					style="@style/TextviewHomeBtnSub"
+					android:text="由第三方提供"
+					/>
+
+			</LinearLayout>
+
+		</LinearLayout>
+
+		<LinearLayout
+			android:id="@+id/btnShowHelp"
+			style="@style/ButtonHome"
+			>
+
+			<View
+				style="@style/ViewHomeBtnIcon"
+				android:background="@drawable/circle_help"
+				/>
+
+			<LinearLayout style="@style/LinHomeBtnChild">
+
+				<TextView
+					style="@style/TextviewHomeBtnMain"
+					android:text="了解 小明点读"
+					/>
+				
+			</LinearLayout>
+
+		</LinearLayout>
+
 	</LinearLayout>
-
 
 </ScrollView>
