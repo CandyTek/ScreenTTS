@@ -68,7 +68,12 @@ public class MyAccessibility extends AccessibilityService {
 				if (noteInfo != null && noteInfo.getText() != null && !noteInfo.getText().toString().trim().equals("")) {
 					// Log.i(TAG, noteInfo.toString());
 					Log.e(TAG,noteInfo.getText().toString());
-					tts.speak(noteInfo.getText().toString(),TextToSpeech.QUEUE_FLUSH,null,"DEFAULT");
+					try {
+						tts.speak(noteInfo.getText().toString(),TextToSpeech.QUEUE_FLUSH,null,"DEFAULT");
+					}
+					catch (Exception e) {
+						initTts();
+					}
 				} else {
 					Log.i(TAG,"noteInfo error");
 				}
