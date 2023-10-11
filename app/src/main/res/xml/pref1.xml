@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	>
+
+	<SwitchPreference
+		android:key="pref_is_read_child"
+		android:title="是否阅读子元素"
+		android:summary="当文本不存在时，是否阅读子元素文本"
+		android:defaultValue="true"
+		/>
+
+	<SwitchPreference
+		android:key="pref_is_read_contentdescription"
+		android:title="是否阅读 ContentDescription"
+		android:summary="当文本不存在时，是否阅读 ContentDescription"
+		android:defaultValue="true"
+		/>
+
+
+	<SwitchPreference
+		android:key="pref_tts_is_need_refresh_regularly"
+		android:title="TTS 使用前初始化"
+		android:summary="TTS 在闲置一段时间时，下次使用前初始化 TTS"
+		android:defaultValue="false"
+		/>
+
+	<EditTextPreference
+		android:key="pref_tts_refresh_time"
+		android:title="闲置时间"
+		android:dialogTitle="闲置时间（分钟）"
+		android:inputType="number"
+		android:defaultValue="20"
+		/>
+
+</PreferenceScreen>

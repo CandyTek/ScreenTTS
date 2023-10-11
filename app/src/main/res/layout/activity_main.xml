@@ -4,7 +4,7 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	android:fitsSystemWindows="true"
-	tools:context=".TestActivity1"
+	tools:context=".MainActivity"
 	>
 
 	<LinearLayout
@@ -48,6 +48,7 @@
 			>
 
 			<View
+				android:id="@+id/viewRunningStatus"
 				style="@style/ViewHomeBtnIcon"
 				android:background="@drawable/circle_running"
 				/>
@@ -57,7 +58,7 @@
 				<TextView
 					android:id="@+id/tvServiceRunningStatus"
 					style="@style/TextviewHomeBtnMain"
-					android:text="小明点读 正在运行"
+					tools:text="小明点读 正在运行"
 					android:textStyle="bold"
 					/>
 
@@ -141,6 +142,33 @@
 				<TextView
 					style="@style/TextviewHomeBtnSub"
 					android:text="由第三方提供"
+					/>
+
+			</LinearLayout>
+
+		</LinearLayout>
+		
+		<LinearLayout
+			android:id="@+id/btnGotoAppSettings"
+			style="@style/ButtonHome"
+			>
+
+			<View
+				style="@style/ViewHomeBtnIcon"
+				android:background="@drawable/circle_settings"
+				/>
+
+			<LinearLayout style="@style/LinHomeBtnChild">
+
+				<TextView
+					style="@style/TextviewHomeBtnMain"
+					android:text="高级设置"
+					/>
+
+				<TextView
+					android:visibility="gone"
+					style="@style/TextviewHomeBtnSub"
+					android:text=""
 					/>
 
 			</LinearLayout>

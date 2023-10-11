@@ -1,12 +1,14 @@
 package com.xiaoming.screentts;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
@@ -23,8 +25,10 @@ import com.xiaoming.screentts.databinding.ActivityMainBinding;
 
 import java.util.Locale;
 
-public class TestActivity1 extends Activity {
-	private static final String TAG = TestActivity1.class.getSimpleName();
+/** {@link R.layout#activity_main} */
+public class MainActivity extends Activity {
+	private static final String TAG = MainActivity.class.getSimpleName();
+	private static final int RESULT_SETTINGS = 101;
 
 	private ActivityMainBinding binding;
 	private TextToSpeech tts;
@@ -45,7 +49,7 @@ public class TestActivity1 extends Activity {
 		// 测试播放文本
 		binding.btnRefreshTTS.setOnClickListener(v -> {
 			initTts();
-			sendCustomBroadcast();
+			sendCustomBroadcast(Constants.BROADCAST_REFRESH_TTS);
 		});
 		// 前往无障碍设置
 		binding.btnRunningStatus.setOnClickListener(v -> {
@@ -61,25 +65,47 @@ public class TestActivity1 extends Activity {
 		});
 		// 下载更多TTS
 		binding.btnDownloadTTS.setOnClickListener(v -> {
-			openBrowser(this,"https://github.com/jing332/tts-server-android/releases");
+			tools.openBrowser(this,"https://github.com/jing332/tts-server-android/releases");
+		});
+		// 前往应用设置
+		binding.btnGotoAppSettings.setOnClickListener(v -> {
+			Intent intent = new Intent(this,SettingActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			startActivityForResult(intent,RESULT_SETTINGS);
 		});
 
 
 	}
 
-	/** 菜单_初始化  */
+	@SuppressLint("SetTextI18n")
+	@Override
+	protected void onResume() {
+		super.onResume();
+		boolean isRunning = tools.isServiceRunning(this,MyAccessibility.class);
+		binding.tvServiceRunningStatus.setText("小明点读 " + (isRunning ? "正在运行！" : "未在运行！"));
+		binding.tvServiceRunningStatusSub.setText((isRunning ? "版本 " + BuildConfig.VERSION_NAME : "前往无障碍设置页面，找到并点击“小明点读”一项，选择开启或关闭"));
+		binding.viewRunningStatus.setBackgroundResource(isRunning ? R.drawable.circle_running : R.drawable.circle_running_false);
+	}
+
+	/** 菜单_初始化 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater menuInflater=getMenuInflater();
-		menuInflater.inflate(R.menu.menu_home, menu);
+		MenuInflater menuInflater = getMenuInflater();
+		menuInflater.inflate(R.menu.menu_home,menu);
 		return true;
 	}
 
-	/** 菜单_功能相关  */
+	/** 菜单_功能相关 */
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item){
+	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item.getItemId() == R.id.menu_quit_app) {
-			System.exit(0);
+			sendCustomBroadcast(Constants.BROADCAST_CLOSE_SERVICE);
+			// 延迟退出，防止广播来不及发
+			Runnable exitRunnable = () -> System.exit(0);
+			Handler handler = new Handler(Looper.getMainLooper());
+			handler.postDelayed(exitRunnable,700); // 延迟执行
+			finish();
 			return true;
 		} else if (item.getItemId() == R.id.menu_about) {
 
@@ -88,42 +114,11 @@ public class TestActivity1 extends Activity {
 			onBackPressed();
 			return true;
 		}
+
 		return super.onOptionsItemSelected(item);
 	}
 
-	public static void openBrowser(Context context,String url) {
-		final Intent intent = new Intent();
-		intent.setAction(Intent.ACTION_VIEW);
-		intent.setData(Uri.parse(url));
-		// 注意此处的判断intent.resolveActivity()可以返回显示该Intent的Activity对应的组件名
-		// 官方解释 : Name of the component implementing an activity that can display the intent
-		if (intent.resolveActivity(context.getPackageManager()) != null) {
-			final ComponentName componentName = intent.resolveActivity(context.getPackageManager()); // 打印Log   ComponentName到底是什么 L.d("componentName = " + componentName.getClassName());
-			context.startActivity(Intent.createChooser(intent,"请选择浏览器"));
-		} else {
-			Toast.makeText(context.getApplicationContext(),"请下载浏览器",Toast.LENGTH_SHORT).show();
-		}
-	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-		boolean isRunning = isServiceRunning(this,MyAccessibility.class);
-		binding.tvServiceRunningStatus.setText("小明点读 " + (isRunning ? "正在运行！" : "未在运行！"));
-		binding.tvServiceRunningStatusSub.setText((isRunning ? "版本 " +BuildConfig.VERSION_NAME :  "前往无障碍设置页面，找到并点击“小明点读”一项，选择开启或关闭"));
-	}
-
-	/** 检查指定服务是否正在运行 */
-	public static boolean isServiceRunning(Context context,Class<?> serviceClass) {
-		ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-		for (ActivityManager.RunningServiceInfo service : activityManager.getRunningServices(Integer.MAX_VALUE)) {
-			if (serviceClass.getName().equals(service.service.getClassName())) {
-				return true;
-			}
-		}
-		return false;
-	}
-
+	/** 初始化 TTS 引擎 */
 	private void initTts() {
 		TextToSpeech.OnInitListener listener = status -> {
 			if (status == TextToSpeech.SUCCESS) {
@@ -136,11 +131,23 @@ public class TestActivity1 extends Activity {
 		tts = new TextToSpeech(this.getApplicationContext(),listener);
 	}
 
-	/** 在需要发送广播的地方调用此方法 */
-	private void sendCustomBroadcast() {
-		Intent intent = new Intent(Constants.ACTION_CUSTOM_BROADCAST);
+	/** 发送广播 */
+	private void sendCustomBroadcast(String content) {
+		Intent intent = new Intent(content);
+		intent.setPackage(this.getPackageName());
 		this.sendBroadcast(intent);
 		Log.w(TAG,"sendCustomBroadcast: 发送广播");
 	}
 
+	@Override
+	protected void onActivityResult(int requestCode,int resultCode,Intent data) {
+		if (resultCode == RESULT_OK) {
+			switch (requestCode) {
+				// 设置完成，发送广播刷新配置
+				case RESULT_SETTINGS: {
+					sendCustomBroadcast(Constants.BROADCAST_REFRESH_TTS);
+				}
+			}
+		}
+	}
 }
