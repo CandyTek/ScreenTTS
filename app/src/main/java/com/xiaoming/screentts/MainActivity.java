@@ -3,6 +3,7 @@ package com.xiaoming.screentts;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -30,6 +31,12 @@ public class MainActivity extends Activity {
 	private static final String TAG = MainActivity.class.getSimpleName();
 	private static final int RESULT_SETTINGS = 101;
 
+
+	private static final String EXTRA_FRAGMENT_ARG_KEY = ":settings:fragment_args_key";
+	private static final String EXTRA_SHOW_FRAGMENT_ARGUMENTS = ":settings:show_fragment_args";
+
+
+
 	private ActivityMainBinding binding;
 	private TextToSpeech tts;
 
@@ -51,10 +58,15 @@ public class MainActivity extends Activity {
 			initTts();
 			sendCustomBroadcast(Constants.BROADCAST_REFRESH_TTS);
 		});
-		// 前往无障碍设置
+		// 前往无障碍设置，并高亮显示
 		binding.btnRunningStatus.setOnClickListener(v -> {
 			Intent intent = new Intent();
+			Bundle bundle = new Bundle();
 			intent.setAction(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+			String componentName =new ComponentName(this, MyAccessibility.class).flattenToString();
+			bundle.putString(EXTRA_FRAGMENT_ARG_KEY, componentName);
+			intent.putExtra(EXTRA_FRAGMENT_ARG_KEY, componentName);
+			intent.putExtra(EXTRA_SHOW_FRAGMENT_ARGUMENTS, bundle);
 			startActivity(intent);
 		});
 		// 前往系统 TTS
