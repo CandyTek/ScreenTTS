@@ -7,6 +7,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.os.Build;
 import android.os.SystemClock;
 import android.speech.tts.TextToSpeech;
@@ -17,6 +19,8 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 
 /** 无障碍服务，主功能，读取点击文本 */
@@ -26,7 +30,10 @@ public class MyAccessibility extends AccessibilityService {
 	private boolean isNeedReadChild = true;
 	private boolean isNeedReadDescription = true;
 	private boolean isNeedRefresh = false;
+	private boolean isIncludeSystemApp = false;
 	private int isNeedRefreshTime = 20;
+
+	HashSet<String> systemAppMap;
 
 	@Override
 	protected void onServiceConnected() {
@@ -41,6 +48,13 @@ public class MyAccessibility extends AccessibilityService {
 		accessibilityServiceInfo.feedbackType = AccessibilityServiceInfo.FEEDBACK_SPOKEN;
 		accessibilityServiceInfo.notificationTimeout = 1000;
 		setServiceInfo(accessibilityServiceInfo);
+
+		systemAppMap = new HashSet<>();
+		List<PackageInfo> packageInfos = getPackageManager().getInstalledPackages(0);
+		for (PackageInfo packageInfo : packageInfos) {
+			if ((ApplicationInfo.FLAG_SYSTEM & packageInfo.applicationInfo.flags) != 0)
+				systemAppMap.add(packageInfo.packageName);
+		}
 	}
 
 	/** 广播接收器 */
@@ -78,6 +92,7 @@ public class MyAccessibility extends AccessibilityService {
 
 	/** 读取配置 */
 	private void initPref() {
+		isIncludeSystemApp = SettingUtil.getBoolean(Constants.PREF_IS_INCLUDE_SYSTEMAPP,false);
 		isNeedReadChild = SettingUtil.getBoolean(Constants.PREF_IS_READ_CHILD,true);
 		isNeedReadDescription = SettingUtil.getBoolean(Constants.PREF_IS_READ_CONTENTDESCRIPTION,true);
 		isNeedRefresh = SettingUtil.getBoolean(Constants.PREF_TTS_IS_NEED_REFRESH,false);
@@ -102,7 +117,9 @@ public class MyAccessibility extends AccessibilityService {
 			return;
 		}
 		Log.w(TAG,"当前包名:" + packageName + "\nEvent " + AccessibilityEvent.eventTypeToString(eventType));
-		if (eventType == AccessibilityEvent.TYPE_VIEW_CLICKED) {
+
+		// 是否需要排除系统应用
+		if (eventType == AccessibilityEvent.TYPE_VIEW_CLICKED && (isIncludeSystemApp || !systemAppMap.contains(packageName))) {
 			speakSouce(source);
 		}
 	}

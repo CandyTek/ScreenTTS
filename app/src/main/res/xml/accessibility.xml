@@ -5,4 +5,6 @@
 	android:notificationTimeout="100"
 	android:canRetrieveWindowContent="true"
 	android:description="@string/accessibility_service_description"
+	android:settingsActivity="com.xiaoming.screentts.SettingActivity"
 	/>
+<!-- 	设置界面,在系统的启动服务界面会出现一个设置按钮,用来打开这个Activity的; -->
