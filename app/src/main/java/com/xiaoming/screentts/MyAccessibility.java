@@ -31,9 +31,11 @@ public class MyAccessibility extends AccessibilityService {
 	private boolean isNeedReadDescription = true;
 	private boolean isNeedRefresh = false;
 	private boolean isIncludeSystemApp = false;
+	private boolean isIncludeUserApp = true;
 	private int isNeedRefreshTime = 20;
 
 	HashSet<String> systemAppMap;
+	HashSet<String> userAppMap;
 
 	@Override
 	protected void onServiceConnected() {
@@ -50,10 +52,14 @@ public class MyAccessibility extends AccessibilityService {
 		setServiceInfo(accessibilityServiceInfo);
 
 		systemAppMap = new HashSet<>();
+		userAppMap = new HashSet<>();
 		List<PackageInfo> packageInfos = getPackageManager().getInstalledPackages(0);
 		for (PackageInfo packageInfo : packageInfos) {
 			if ((ApplicationInfo.FLAG_SYSTEM & packageInfo.applicationInfo.flags) != 0)
 				systemAppMap.add(packageInfo.packageName);
+			else {
+				userAppMap.add(packageInfo.packageName);
+			}
 		}
 	}
 
@@ -93,6 +99,7 @@ public class MyAccessibility extends AccessibilityService {
 	/** 读取配置 */
 	private void initPref() {
 		isIncludeSystemApp = SettingUtil.getBoolean(Constants.PREF_IS_INCLUDE_SYSTEMAPP,false);
+		isIncludeUserApp = SettingUtil.getBoolean(Constants.PREF_IS_INCLUDE_USERAPP,false);
 		isNeedReadChild = SettingUtil.getBoolean(Constants.PREF_IS_READ_CHILD,true);
 		isNeedReadDescription = SettingUtil.getBoolean(Constants.PREF_IS_READ_CONTENTDESCRIPTION,true);
 		isNeedRefresh = SettingUtil.getBoolean(Constants.PREF_TTS_IS_NEED_REFRESH,false);
@@ -119,8 +126,16 @@ public class MyAccessibility extends AccessibilityService {
 		Log.w(TAG,"当前包名:" + packageName + "\nEvent " + AccessibilityEvent.eventTypeToString(eventType));
 
 		// 是否需要排除系统应用
-		if (eventType == AccessibilityEvent.TYPE_VIEW_CLICKED && (isIncludeSystemApp || !systemAppMap.contains(packageName))) {
-			speakSouce(source);
+		if (eventType == AccessibilityEvent.TYPE_VIEW_CLICKED && (isIncludeSystemApp || isIncludeUserApp)) {
+
+			if (systemAppMap.contains(packageName)) {
+				if (isIncludeSystemApp) {
+					speakSouce(source);
+				}
+			} else if (isIncludeUserApp) {
+				speakSouce(source);
+
+			}
 		}
 	}
 
@@ -182,6 +197,7 @@ public class MyAccessibility extends AccessibilityService {
 		// TODO Auto-generated method stub
 
 	}
+
 	private TextToSpeech tts;
 
 	/** 初始化 TTS */

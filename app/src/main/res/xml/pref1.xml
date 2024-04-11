@@ -17,7 +17,14 @@
 		android:defaultValue="false"
 		android:key="pref_is_include_systemapp"
 		android:title="是否包含系统应用" />
+	<SwitchPreference
+		android:defaultValue="true"
+		android:key="pref_is_include_userapp"
+		android:title="是否包含用户应用" />
 
+	<Preference
+		android:key="pref_whitelist_app"
+		android:title="白名单" />
 	<SwitchPreference
 		android:defaultValue="false"
 		android:key="pref_tts_is_need_refresh_regularly"
@@ -30,5 +37,7 @@
 		android:inputType="number"
 		android:key="pref_tts_refresh_time"
 		android:title="闲置时间" />
+
+
 
 </PreferenceScreen>
