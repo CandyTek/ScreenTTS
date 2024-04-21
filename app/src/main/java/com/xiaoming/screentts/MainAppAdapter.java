@@ -1,15 +1,13 @@
 package com.xiaoming.screentts;
 
 import android.content.Context;
-import android.os.Build;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
 import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -19,10 +17,10 @@ import java.util.List;
 
 public class MainAppAdapter extends BaseAdapter implements Filterable {
 	private final Context context;
-	private List<AppInfo> displayApps;
+	public List<AppInfo> displayApps;
 	private SearchFilter filter;            // 筛选相关
 	private final ArrayList<String> listMoveNull = new ArrayList<>();    // RemoveAll 移除空白 专用
-	public List<AppInfo> originalInfo;	// 保留一份原始的数据，给筛选用
+	public List<AppInfo> originalInfo;    // 保留一份原始的数据，给筛选用
 
 	public MainAppAdapter(Context context,List<AppInfo> apps) {
 
@@ -56,6 +54,7 @@ public class MainAppAdapter extends BaseAdapter implements Filterable {
 			holder = new ViewHolder();
 			holder.tvAppLabel = convertView.findViewById(R.id.title);
 			holder.tvPkgName = convertView.findViewById(R.id.subTitle);
+			holder.linRoot = convertView.findViewById(R.id.linRoot);
 			convertView.setTag(holder);
 		} else {
 			holder = (ViewHolder) convertView.getTag();
@@ -64,6 +63,7 @@ public class MainAppAdapter extends BaseAdapter implements Filterable {
 		AppInfo appInfo = displayApps.get(position);
 		holder.tvAppLabel.setText(appInfo.label);
 		holder.tvPkgName.setText(appInfo.pkgName);
+		holder.linRoot.setBackgroundColor(appInfo.isSelected ? Color.GRAY : Color.TRANSPARENT);
 
 		return convertView;
 	}
@@ -72,9 +72,10 @@ public class MainAppAdapter extends BaseAdapter implements Filterable {
 		// View_Holder
 		TextView tvAppLabel;
 		TextView tvPkgName;
+		LinearLayout linRoot;
 	}
 
-	class SearchFilter extends Filter {
+	public class SearchFilter extends Filter {
 		//██ 发布搜索_结果 ██
 		@SuppressWarnings("unchecked")
 		@Override
@@ -85,7 +86,11 @@ public class MainAppAdapter extends BaseAdapter implements Filterable {
 		}
 
 		private final Object mLock = new Object();// 互锁相关
-		public String keyWord = "";            // 当前搜索的 字符串
+		private String keyWord = "";            // 当前搜索的 字符串
+
+		public String getKeyWord() {
+			return keyWord;
+		}
 
 		//██ 主要搜索方法 ██
 		@Override
@@ -155,13 +160,19 @@ public class MainAppAdapter extends BaseAdapter implements Filterable {
 
 	}
 
-	//██ 搜索filter初始化 ██
+	/** ██ 搜索filter初始化 ██ */
 	@Override
-	public Filter getFilter() {
+	public SearchFilter getFilter() {
 		if (filter == null) {
 			filter = new SearchFilter();
 		}
 		return filter;
+	}
+
+	/** ██ 仅更新单个view的背景 ██ */
+	public static void updateSingleItemBackground(View convertView,boolean isSelected) {
+		if (convertView == null) return;
+		((ViewHolder) convertView.getTag()).linRoot.setBackgroundColor(isSelected ? Color.GRAY : Color.TRANSPARENT);
 	}
 
 }

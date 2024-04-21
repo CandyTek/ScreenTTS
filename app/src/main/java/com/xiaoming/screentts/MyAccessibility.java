@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -36,6 +37,7 @@ public class MyAccessibility extends AccessibilityService {
 
 	HashSet<String> systemAppMap;
 	HashSet<String> userAppMap;
+	HashSet<String> whiteAppMap;
 
 	@Override
 	protected void onServiceConnected() {
@@ -45,22 +47,12 @@ public class MyAccessibility extends AccessibilityService {
 		initReceiver();
 		AccessibilityServiceInfo accessibilityServiceInfo = new AccessibilityServiceInfo();
 		// accessibilityServiceInfo.packageNames = PACKAGES;
-		accessibilityServiceInfo.eventTypes = AccessibilityEvent.TYPE_VIEW_CLICKED | AccessibilityEvent.TYPE_VIEW_LONG_CLICKED;
+		// accessibilityServiceInfo.eventTypes = AccessibilityEvent.TYPE_VIEW_CLICKED | AccessibilityEvent.TYPE_VIEW_LONG_CLICKED;
+		accessibilityServiceInfo.eventTypes = AccessibilityEvent.TYPE_VIEW_CLICKED;
 		// accessibilityServiceInfo.eventTypes = AccessibilityEvent.TYPES_ALL_MASK;
 		accessibilityServiceInfo.feedbackType = AccessibilityServiceInfo.FEEDBACK_SPOKEN;
 		accessibilityServiceInfo.notificationTimeout = 1000;
 		setServiceInfo(accessibilityServiceInfo);
-
-		systemAppMap = new HashSet<>();
-		userAppMap = new HashSet<>();
-		List<PackageInfo> packageInfos = getPackageManager().getInstalledPackages(0);
-		for (PackageInfo packageInfo : packageInfos) {
-			if ((ApplicationInfo.FLAG_SYSTEM & packageInfo.applicationInfo.flags) != 0)
-				systemAppMap.add(packageInfo.packageName);
-			else {
-				userAppMap.add(packageInfo.packageName);
-			}
-		}
 	}
 
 	/** 广播接收器 */
@@ -107,6 +99,19 @@ public class MyAccessibility extends AccessibilityService {
 			isNeedRefreshTime = Integer.parseInt(SettingUtil.getString(Constants.PREF_TTS_REFRESH_TIME,"20"));
 		}
 		catch (NumberFormatException ignored) {}
+
+		systemAppMap = new HashSet<>();
+		userAppMap = new HashSet<>();
+		List<PackageInfo> packageInfos = getPackageManager().getInstalledPackages(0);
+		for (PackageInfo packageInfo : packageInfos) {
+			if ((ApplicationInfo.FLAG_SYSTEM & packageInfo.applicationInfo.flags) != 0)
+				systemAppMap.add(packageInfo.packageName);
+			else {
+				userAppMap.add(packageInfo.packageName);
+			}
+		}
+		String saveWhiteList = SettingUtil.getString("saveWhiteList","");
+		whiteAppMap = new HashSet<>(Arrays.asList(saveWhiteList.split("/")));
 	}
 
 	/** 监听无障碍事件 */
@@ -126,15 +131,17 @@ public class MyAccessibility extends AccessibilityService {
 		Log.w(TAG,"当前包名:" + packageName + "\nEvent " + AccessibilityEvent.eventTypeToString(eventType));
 
 		// 是否需要排除系统应用
-		if (eventType == AccessibilityEvent.TYPE_VIEW_CLICKED && (isIncludeSystemApp || isIncludeUserApp)) {
-
-			if (systemAppMap.contains(packageName)) {
-				if (isIncludeSystemApp) {
+		if (eventType == AccessibilityEvent.TYPE_VIEW_CLICKED) {
+			if (whiteAppMap.contains(packageName)) {
+				speakSouce(source);
+			}else if (isIncludeSystemApp || isIncludeUserApp) {
+				if (systemAppMap.contains(packageName)) {
+					if (isIncludeSystemApp) {
+						speakSouce(source);
+					}
+				} else if (isIncludeUserApp) {
 					speakSouce(source);
 				}
-			} else if (isIncludeUserApp) {
-				speakSouce(source);
-
 			}
 		}
 	}

@@ -15,7 +15,7 @@ public class SettingActivity extends PreferenceActivity {
 		addPreferencesFromResource(R.xml.pref1);
 		
 		findPreference(Constants.PREF_TTS_REFRESH_TIME).setEnabled(SettingUtil.getBoolean(Constants.PREF_TTS_IS_NEED_REFRESH,false));
-		findPreference("pref_whitelist_app").setOnPreferenceChangeListener((preference,newValue) -> {
+		findPreference("pref_whitelist_app").setOnPreferenceClickListener((preference) -> {
 			startActivity(new Intent(this,WhitelistActivity.class));
 			return false;
 		});
