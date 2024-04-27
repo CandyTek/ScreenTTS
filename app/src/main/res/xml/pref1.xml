@@ -29,6 +29,11 @@
 	<EditTextPreference
 		android:dialogTitle="以回车符分隔"
 		android:inputType="textMultiLine"
+		android:key="pref_contains"
+		android:title="不播放内容为 ... 的语句" />
+	<EditTextPreference
+		android:dialogTitle="以回车符分隔"
+		android:inputType="textMultiLine"
 		android:key="pref_startswith"
 		android:title="不播放开头为 ... 的语句" />
 	<EditTextPreference

@@ -19,10 +19,13 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /** 无障碍服务，主功能，读取点击文本 */
 public class MyAccessibility extends AccessibilityService {
@@ -90,6 +93,7 @@ public class MyAccessibility extends AccessibilityService {
 
 	String[] startsWithList;
 	String[] endsWithList;
+	List<String> containsList;
 
 	/** 读取配置 */
 	private void initPref() {
@@ -100,7 +104,7 @@ public class MyAccessibility extends AccessibilityService {
 		isNeedRefresh = SettingUtil.getBoolean(Constants.PREF_TTS_IS_NEED_REFRESH,false);
 		startsWithList = SettingUtil.getString("pref_startswith","未播放\n").trim().split("\n");
 		endsWithList = SettingUtil.getString("pref_endswith","").trim().split("\n");
-
+		containsList = (Arrays.asList(SettingUtil.getString("pref_contains","").trim().split("\n")));
 		try {
 			isNeedRefreshTime = Integer.parseInt(SettingUtil.getString(Constants.PREF_TTS_REFRESH_TIME,"20"));
 		}
@@ -200,7 +204,9 @@ public class MyAccessibility extends AccessibilityService {
 				return;
 			}
 		}
-
+		if (containsList.contains(text)) {
+			return;
+		}
 		if (isNeedRefresh) {
 			if (((SystemClock.elapsedRealtime() - lastReadCurrectMills) / 60000) > isNeedRefreshTime) {
 				initTts(true,text);
