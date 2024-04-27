@@ -88,6 +88,9 @@ public class MyAccessibility extends AccessibilityService {
 		}
 	}
 
+	String[] startsWithList;
+	String[] endsWithList;
+
 	/** 读取配置 */
 	private void initPref() {
 		isIncludeSystemApp = SettingUtil.getBoolean(Constants.PREF_IS_INCLUDE_SYSTEMAPP,false);
@@ -95,6 +98,9 @@ public class MyAccessibility extends AccessibilityService {
 		isNeedReadChild = SettingUtil.getBoolean(Constants.PREF_IS_READ_CHILD,true);
 		isNeedReadDescription = SettingUtil.getBoolean(Constants.PREF_IS_READ_CONTENTDESCRIPTION,true);
 		isNeedRefresh = SettingUtil.getBoolean(Constants.PREF_TTS_IS_NEED_REFRESH,false);
+		startsWithList = SettingUtil.getString("pref_startswith","未播放\n").trim().split("\n");
+		endsWithList = SettingUtil.getString("pref_endswith","").trim().split("\n");
+
 		try {
 			isNeedRefreshTime = Integer.parseInt(SettingUtil.getString(Constants.PREF_TTS_REFRESH_TIME,"20"));
 		}
@@ -134,7 +140,7 @@ public class MyAccessibility extends AccessibilityService {
 		if (eventType == AccessibilityEvent.TYPE_VIEW_CLICKED) {
 			if (whiteAppMap.contains(packageName)) {
 				speakSouce(source);
-			}else if (isIncludeSystemApp || isIncludeUserApp) {
+			} else if (isIncludeSystemApp || isIncludeUserApp) {
 				if (systemAppMap.contains(packageName)) {
 					if (isIncludeSystemApp) {
 						speakSouce(source);
@@ -150,14 +156,14 @@ public class MyAccessibility extends AccessibilityService {
 	private void speakSouce(AccessibilityNodeInfo source) {
 		// 获取子控件数量
 		int childCount = source.getChildCount();
-		if (source.getText() != null && !source.getText().toString().trim().equals("")) {
+		if (source.getText() != null && source.getText().toString().trim().length() > 0) {
 			Log.w(TAG,"当前 Text: " + source.getText().toString());
 			// toast(source.getText().toString());
-			speak(source.getText().toString());
-		} else if (isNeedReadDescription && source.getContentDescription() != null && !source.getContentDescription().toString().trim().equals("")) {
+			speak(source.getText().toString().trim());
+		} else if (isNeedReadDescription && source.getContentDescription() != null && source.getContentDescription().toString().trim().length() > 0) {
 			Log.w(TAG,"当前 ContentDescription: " + source.getContentDescription());
 			// toast(source.getContentDescription().toString());
-			speak(source.getContentDescription().toString());
+			speak(source.getContentDescription().toString().trim());
 		} else if (isNeedReadChild && childCount != 0) {
 			Log.w(TAG,"总共有 " + childCount + " 个子控件");
 			// 遍历子控件并获取文本
@@ -168,9 +174,10 @@ public class MyAccessibility extends AccessibilityService {
 					sb.append(childNode.getText().toString());
 				}
 			}
+			String result = sb.toString().trim();
 			// toast(sb.toString());
-			if (!sb.toString().trim().equals("")) {
-				speak(sb.toString());
+			if (result.length() > 0) {
+				speak(result);
 			} else {
 				Log.w(TAG,"子控件文本为空");
 			}
@@ -183,6 +190,17 @@ public class MyAccessibility extends AccessibilityService {
 
 	/** 调用 TTS 说话，并包装是否需要刷新 */
 	private void speak(String text) {
+		for (String s : startsWithList) {
+			if (text.startsWith(s)) {
+				return;
+			}
+		}
+		for (String s : endsWithList) {
+			if (text.endsWith(s)) {
+				return;
+			}
+		}
+
 		if (isNeedRefresh) {
 			if (((SystemClock.elapsedRealtime() - lastReadCurrectMills) / 60000) > isNeedRefreshTime) {
 				initTts(true,text);

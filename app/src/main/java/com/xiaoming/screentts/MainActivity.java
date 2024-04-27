@@ -77,6 +77,10 @@ public class MainActivity extends Activity {
 		binding.btnDownloadTTS.setOnClickListener(v -> {
 			tools.openBrowser(this,"https://github.com/jing332/tts-server-android/releases");
 		});
+		// 了解
+		binding.btnShowHelp.setOnClickListener(v -> {
+			tools.openBrowser(this,"https://github.com/CandyTek/ScreenTTS");
+		});
 		// 前往应用设置
 		binding.btnGotoAppSettings.setOnClickListener(v -> {
 			Intent intent = new Intent(this,SettingActivity.class);
@@ -90,21 +94,19 @@ public class MainActivity extends Activity {
 
 	/** 尝试自动开启无障碍权限 */
 	private void initPermission() {
-		if (BuildConfig.DEBUG) {
-			try {
-				Settings.Secure.putString(getContentResolver(),
-						Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES,
-						getPackageName() + "/." + MyAccessibility.class.getSimpleName());
+		try {
+			Settings.Secure.putString(getContentResolver(),
+					Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES,
+					getPackageName() + "/." + MyAccessibility.class.getSimpleName());
 
-				Settings.Secure.putInt(getContentResolver(),
-						Settings.Secure.ACCESSIBILITY_ENABLED,1);
-			}
-			catch (Exception e) {
-				e.printStackTrace();
-			}
-
-			Log.e(TAG,"initPermission: 尝试开启无障碍权限" + getPackageName() + "/." + MyAccessibility.class.getSimpleName());
+			Settings.Secure.putInt(getContentResolver(),
+					Settings.Secure.ACCESSIBILITY_ENABLED,1);
 		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		Log.e(TAG,"initPermission: 尝试开启无障碍权限" + getPackageName() + "/." + MyAccessibility.class.getSimpleName());
 	}
 
 	@SuppressLint("SetTextI18n")

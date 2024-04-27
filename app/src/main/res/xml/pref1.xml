@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:tools="http://schemas.android.com/tools">
+	xmlns:tools="http://schemas.android.com/tools"
+	tools:context=".SettingActivity">
 
 	<SwitchPreference
 		android:defaultValue="true"
@@ -25,6 +26,18 @@
 	<Preference
 		android:key="pref_whitelist_app"
 		android:title="白名单" />
+	<EditTextPreference
+		android:dialogTitle="以回车符分隔"
+		android:inputType="textMultiLine"
+		android:key="pref_startswith"
+		android:title="不播放开头为 ... 的语句" />
+	<EditTextPreference
+		android:defaultValue="未播放\n"
+
+		android:dialogTitle="以回车符分隔"
+		android:inputType="textMultiLine"
+		android:key="pref_endswith"
+		android:title="不播放结尾为 ... 的语句" />
 	<SwitchPreference
 		android:defaultValue="false"
 		android:key="pref_tts_is_need_refresh_regularly"
@@ -36,8 +49,8 @@
 		android:dialogTitle="闲置时间（分钟）"
 		android:inputType="number"
 		android:key="pref_tts_refresh_time"
-		android:title="闲置时间" />
-
+		android:title="闲置时间"
+		tools:enabled="false" />
 
 
 </PreferenceScreen>
