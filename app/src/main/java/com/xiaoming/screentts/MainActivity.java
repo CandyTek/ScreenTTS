@@ -31,11 +31,8 @@ public class MainActivity extends Activity {
 	private static final String TAG = MainActivity.class.getSimpleName();
 	private static final int RESULT_SETTINGS = 101;
 
-
 	private static final String EXTRA_FRAGMENT_ARG_KEY = ":settings:fragment_args_key";
 	private static final String EXTRA_SHOW_FRAGMENT_ARGUMENTS = ":settings:show_fragment_args";
-
-
 
 	private ActivityMainBinding binding;
 	private TextToSpeech tts;
@@ -44,6 +41,7 @@ public class MainActivity extends Activity {
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		binding = ActivityMainBinding.inflate(getLayoutInflater());
+		initPermission();
 		setContentView(binding.getRoot());
 		if (getActionBar() != null) {
 			getActionBar().setElevation(0);
@@ -63,10 +61,10 @@ public class MainActivity extends Activity {
 			Intent intent = new Intent();
 			Bundle bundle = new Bundle();
 			intent.setAction(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-			String componentName =new ComponentName(this, MyAccessibility.class).flattenToString();
-			bundle.putString(EXTRA_FRAGMENT_ARG_KEY, componentName);
-			intent.putExtra(EXTRA_FRAGMENT_ARG_KEY, componentName);
-			intent.putExtra(EXTRA_SHOW_FRAGMENT_ARGUMENTS, bundle);
+			String componentName = new ComponentName(this,MyAccessibility.class).flattenToString();
+			bundle.putString(EXTRA_FRAGMENT_ARG_KEY,componentName);
+			intent.putExtra(EXTRA_FRAGMENT_ARG_KEY,componentName);
+			intent.putExtra(EXTRA_SHOW_FRAGMENT_ARGUMENTS,bundle);
 			startActivity(intent);
 		});
 		// 前往系统 TTS
@@ -79,6 +77,10 @@ public class MainActivity extends Activity {
 		binding.btnDownloadTTS.setOnClickListener(v -> {
 			tools.openBrowser(this,"https://github.com/jing332/tts-server-android/releases");
 		});
+		// 了解
+		binding.btnShowHelp.setOnClickListener(v -> {
+			tools.openBrowser(this,"https://github.com/CandyTek/ScreenTTS");
+		});
 		// 前往应用设置
 		binding.btnGotoAppSettings.setOnClickListener(v -> {
 			Intent intent = new Intent(this,SettingActivity.class);
@@ -88,6 +90,23 @@ public class MainActivity extends Activity {
 		});
 
 
+	}
+
+	/** 尝试自动开启无障碍权限 */
+	private void initPermission() {
+		try {
+			Settings.Secure.putString(getContentResolver(),
+					Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES,
+					getPackageName() + "/." + MyAccessibility.class.getSimpleName());
+
+			Settings.Secure.putInt(getContentResolver(),
+					Settings.Secure.ACCESSIBILITY_ENABLED,1);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		Log.e(TAG,"initPermission: 尝试开启无障碍权限" + getPackageName() + "/." + MyAccessibility.class.getSimpleName());
 	}
 
 	@SuppressLint("SetTextI18n")
