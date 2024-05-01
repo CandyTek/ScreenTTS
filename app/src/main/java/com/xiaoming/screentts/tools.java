@@ -4,9 +4,12 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.util.Log;
 import android.widget.Toast;
 
-public class tools {
+public class Tools {
+	private static final String TAG = "Tools";
+
 	/** 调用系统打开链接 */
 	public static void openBrowser(Context context,String url) {
 		final Intent intent = new Intent();
@@ -34,4 +37,11 @@ public class tools {
 		return false;
 	}
 
+	/** 发送广播 */
+	public static void sendCustomBroadcast(Context context,String content) {
+		Intent intent = new Intent(content);
+		intent.setPackage(context.getPackageName());
+		context.sendBroadcast(intent);
+		Log.w(TAG,"sendCustomBroadcast: 发送广播");
+	}
 }

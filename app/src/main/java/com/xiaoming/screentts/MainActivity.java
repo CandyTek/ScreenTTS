@@ -2,11 +2,8 @@ package com.xiaoming.screentts;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -29,7 +26,6 @@ import java.util.Locale;
 /** {@link R.layout#activity_main} */
 public class MainActivity extends Activity {
 	private static final String TAG = MainActivity.class.getSimpleName();
-	private static final int RESULT_SETTINGS = 101;
 
 	private static final String EXTRA_FRAGMENT_ARG_KEY = ":settings:fragment_args_key";
 	private static final String EXTRA_SHOW_FRAGMENT_ARGUMENTS = ":settings:show_fragment_args";
@@ -54,7 +50,7 @@ public class MainActivity extends Activity {
 		// 测试播放文本
 		binding.btnRefreshTTS.setOnClickListener(v -> {
 			initTts();
-			sendCustomBroadcast(Constants.BROADCAST_REFRESH_TTS);
+			Tools.sendCustomBroadcast(this,Constants.BROADCAST_REFRESH_TTS);
 		});
 		// 前往无障碍设置，并高亮显示
 		binding.btnRunningStatus.setOnClickListener(v -> {
@@ -75,20 +71,20 @@ public class MainActivity extends Activity {
 		});
 		// 下载更多TTS
 		binding.btnDownloadTTS.setOnClickListener(v -> {
-			tools.openBrowser(this,"https://github.com/jing332/tts-server-android/releases");
+			Tools.openBrowser(this,"https://github.com/jing332/tts-server-android/releases");
 		});
 		// 了解
 		binding.btnShowHelp.setOnClickListener(v -> {
-			tools.openBrowser(this,"https://github.com/CandyTek/ScreenTTS");
+			Tools.openBrowser(this,"https://github.com/CandyTek/ScreenTTS");
 		});
 		// 前往应用设置
 		binding.btnGotoAppSettings.setOnClickListener(v -> {
 			Intent intent = new Intent(this,SettingActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			startActivityForResult(intent,RESULT_SETTINGS);
+			startActivity(intent);
 		});
-
+		binding.tvServiceRunningStatusSub.setText("版本 " + BuildConfig.VERSION_NAME);
 
 	}
 
@@ -113,7 +109,7 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		boolean isRunning = tools.isServiceRunning(this,MyAccessibility.class);
+		boolean isRunning = Tools.isServiceRunning(this,MyAccessibility.class);
 		binding.tvServiceRunningStatus.setText("小明点读 " + (isRunning ? "正在运行！" : "未在运行！"));
 		binding.tvServiceRunningStatusSub.setText((isRunning ? "版本 " + BuildConfig.VERSION_NAME : "前往无障碍设置页面，找到并点击“小明点读”一项，选择开启或关闭"));
 		binding.viewRunningStatus.setBackgroundResource(isRunning ? R.drawable.circle_running : R.drawable.circle_running_false);
@@ -131,7 +127,7 @@ public class MainActivity extends Activity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item.getItemId() == R.id.menu_quit_app) {
-			sendCustomBroadcast(Constants.BROADCAST_CLOSE_SERVICE);
+			Tools.sendCustomBroadcast(this,Constants.BROADCAST_CLOSE_SERVICE);
 			// 延迟退出，防止广播来不及发
 			Runnable exitRunnable = () -> System.exit(0);
 			Handler handler = new Handler(Looper.getMainLooper());
@@ -154,7 +150,7 @@ public class MainActivity extends Activity {
 		TextToSpeech.OnInitListener listener = status -> {
 			if (status == TextToSpeech.SUCCESS) {
 				tts.setLanguage(Locale.CHINA);
-				tts.speak("生活就像海洋，只有意志坚强的人才能到达彼岸",TextToSpeech.QUEUE_FLUSH,null,"DEFAULT");
+				tts.speak("生活就像海洋，只有意志坚强的人才能到达彼岸",2,null,"DEFAULT");
 			} else {
 				Toast.makeText(getApplicationContext(),"初始化引擎失败",Toast.LENGTH_SHORT).show();
 			}
@@ -162,23 +158,4 @@ public class MainActivity extends Activity {
 		tts = new TextToSpeech(this.getApplicationContext(),listener);
 	}
 
-	/** 发送广播 */
-	private void sendCustomBroadcast(String content) {
-		Intent intent = new Intent(content);
-		intent.setPackage(this.getPackageName());
-		this.sendBroadcast(intent);
-		Log.w(TAG,"sendCustomBroadcast: 发送广播");
-	}
-
-	@Override
-	protected void onActivityResult(int requestCode,int resultCode,Intent data) {
-		if (resultCode == RESULT_OK) {
-			switch (requestCode) {
-				// 设置完成，发送广播刷新配置
-				case RESULT_SETTINGS: {
-					sendCustomBroadcast(Constants.BROADCAST_REFRESH_TTS);
-				}
-			}
-		}
-	}
 }

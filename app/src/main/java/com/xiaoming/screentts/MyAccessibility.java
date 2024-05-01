@@ -12,11 +12,13 @@ import android.content.pm.PackageInfo;
 import android.os.Build;
 import android.os.SystemClock;
 import android.speech.tts.TextToSpeech;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
@@ -24,8 +26,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.regex.Pattern;
 
 /** 无障碍服务，主功能，读取点击文本 */
 public class MyAccessibility extends AccessibilityService {
@@ -38,9 +39,8 @@ public class MyAccessibility extends AccessibilityService {
 	private boolean isIncludeUserApp = true;
 	private int isNeedRefreshTime = 20;
 
-	HashSet<String> systemAppMap;
-	HashSet<String> userAppMap;
-	HashSet<String> whiteAppMap;
+	private HashSet<String> systemAppMap;
+	private HashSet<String> whiteAppMap;
 
 	@Override
 	protected void onServiceConnected() {
@@ -91,9 +91,20 @@ public class MyAccessibility extends AccessibilityService {
 		}
 	}
 
-	String[] startsWithList;
-	String[] endsWithList;
-	List<String> containsList;
+	private List<String> startsWithList;
+	private List<String> endsWithList;
+	private List<String> containsList;
+	private final HashSet<Pattern> containsRegexList = new HashSet<>();
+	private final static List<String> EMPTY_LIST = new ArrayList<>();
+
+	static {
+		EMPTY_LIST.add(null);
+		EMPTY_LIST.add("");
+		EMPTY_LIST.add("\n");
+		EMPTY_LIST.add("\t");
+		EMPTY_LIST.add(" ");
+		EMPTY_LIST.add("\r");
+	}
 
 	/** 读取配置 */
 	private void initPref() {
@@ -102,23 +113,29 @@ public class MyAccessibility extends AccessibilityService {
 		isNeedReadChild = SettingUtil.getBoolean(Constants.PREF_IS_READ_CHILD,true);
 		isNeedReadDescription = SettingUtil.getBoolean(Constants.PREF_IS_READ_CONTENTDESCRIPTION,true);
 		isNeedRefresh = SettingUtil.getBoolean(Constants.PREF_TTS_IS_NEED_REFRESH,false);
-		startsWithList = SettingUtil.getString("pref_startswith","未播放\n").trim().split("\n");
-		endsWithList = SettingUtil.getString("pref_endswith","").trim().split("\n");
-		containsList = (Arrays.asList(SettingUtil.getString("pref_contains","").trim().split("\n")));
+		startsWithList = new ArrayList<>(Arrays.asList(SettingUtil.getString("pref_startswith","未播放\n").trim().split("\n")));
+		endsWithList = new ArrayList<>(Arrays.asList(SettingUtil.getString("pref_endswith","").trim().split("\n")));
+		containsList = new ArrayList<>(Arrays.asList(SettingUtil.getString("pref_contains","").trim().split("\n")));
+		List<String> containsRegexListTemp = new ArrayList<>(Arrays.asList(SettingUtil.getString("pref_contains_regex","").trim().split("\n")));
+		// 移除空值
+		containsRegexListTemp.removeAll(EMPTY_LIST);
+		startsWithList.removeAll(EMPTY_LIST);
+		endsWithList.removeAll(EMPTY_LIST);
+		containsList.removeAll(EMPTY_LIST);
+		containsRegexList.clear();
+		for (String s : containsRegexListTemp) {
+			containsRegexList.add(Pattern.compile(s));
+		}
 		try {
 			isNeedRefreshTime = Integer.parseInt(SettingUtil.getString(Constants.PREF_TTS_REFRESH_TIME,"20"));
 		}
 		catch (NumberFormatException ignored) {}
 
 		systemAppMap = new HashSet<>();
-		userAppMap = new HashSet<>();
 		List<PackageInfo> packageInfos = getPackageManager().getInstalledPackages(0);
 		for (PackageInfo packageInfo : packageInfos) {
 			if ((ApplicationInfo.FLAG_SYSTEM & packageInfo.applicationInfo.flags) != 0)
 				systemAppMap.add(packageInfo.packageName);
-			else {
-				userAppMap.add(packageInfo.packageName);
-			}
 		}
 		String saveWhiteList = SettingUtil.getString("saveWhiteList","");
 		whiteAppMap = new HashSet<>(Arrays.asList(saveWhiteList.split("/")));
@@ -193,29 +210,40 @@ public class MyAccessibility extends AccessibilityService {
 	private long lastReadCurrectMills = SystemClock.elapsedRealtime();
 
 	/** 调用 TTS 说话，并包装是否需要刷新 */
-	private void speak(String text) {
+	private void speak(@NonNull String text) {
+		// 过滤开头包含
 		for (String s : startsWithList) {
 			if (text.startsWith(s)) {
 				return;
 			}
 		}
+		// 过滤结尾包含
 		for (String s : endsWithList) {
 			if (text.endsWith(s)) {
 				return;
 			}
 		}
+		// 过滤完整内容包含
 		if (containsList.contains(text)) {
 			return;
 		}
+		// 过滤正则包含
+		for (Pattern pattern : containsRegexList) {
+			if (pattern.matcher(text).matches()) {
+				return;
+			}
+		}
+		// 是否超时刷新引擎
 		if (isNeedRefresh) {
 			if (((SystemClock.elapsedRealtime() - lastReadCurrectMills) / 60000) > isNeedRefreshTime) {
 				initTts(true,text);
 			} else {
-				tts.speak(text,TextToSpeech.QUEUE_FLUSH,null,"DEFAULT");
+				// TextToSpeech.QUEUE_FLUSH，QUEUE_DESTROY
+				tts.speak(text,2,null,"DEFAULT");
 			}
 			lastReadCurrectMills = SystemClock.elapsedRealtime();
 		} else {
-			tts.speak(text,TextToSpeech.QUEUE_FLUSH,null,"DEFAULT");
+			tts.speak(text,2,null,"DEFAULT");
 		}
 	}
 

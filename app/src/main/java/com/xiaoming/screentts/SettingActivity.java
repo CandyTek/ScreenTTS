@@ -19,10 +19,6 @@ public class SettingActivity extends PreferenceActivity {
 			startActivity(new Intent(this,WhitelistActivity.class));
 			return false;
 		});
-		findPreference("pref_whitelist_app").setOnPreferenceClickListener((preference) -> {
-			startActivity(new Intent(this,WhitelistActivity.class));
-			return false;
-		});
 
 		findPreference(Constants.PREF_TTS_IS_NEED_REFRESH).setOnPreferenceChangeListener((preference,newValue) -> {
 			findPreference(Constants.PREF_TTS_REFRESH_TIME).setEnabled((boolean) newValue);
@@ -31,4 +27,9 @@ public class SettingActivity extends PreferenceActivity {
 
 	}
 
+	@Override
+	public void finish() {
+		Tools.sendCustomBroadcast(this,Constants.BROADCAST_REFRESH_TTS);
+		super.finish();
+	}
 }

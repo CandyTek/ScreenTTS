@@ -65,7 +65,7 @@
 				<TextView
 					android:id="@+id/tvServiceRunningStatusSub"
 					style="@style/TextviewHomeBtnSub"
-					android:text="版本 1.0"
+					tools:text="版本"
 					/>
 
 			</LinearLayout>
